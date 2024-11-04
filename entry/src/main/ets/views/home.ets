@@ -183,7 +183,8 @@ export struct HomeView {
     builder: CheckInCustomDialog({
       save: this.saveLog.bind(this)
     }),
-    autoCancel: false
+    // autoCancel: false,
+
   })
   
   @State pageModel: HomePageModel = new HomePageModel()
@@ -226,7 +227,7 @@ export struct HomeView {
             .fontColor('#fff')
         }
         .padding(32)
-        .width("40%")
+        .width("45%")
         .backgroundColor(CommonConstants.PRIMARY_COLOR)
         .styleShadow()
 
@@ -236,7 +237,7 @@ export struct HomeView {
           Text("￥"+this.pageModel.expandMonth?.toFixed(2))
         }
         .padding(32)
-        .width('40%')
+        .width('45%')
         .border({
           color: CommonConstants.PRIMARY_COLOR,
           width: 1

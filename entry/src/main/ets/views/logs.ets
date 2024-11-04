@@ -41,9 +41,10 @@ struct LogsListView {
 
 @Component
 export struct LogsView {
-  @State startDate: string = dayjs().format("YYYY-MM-DD") // 开始时间
+  @State startDate: string = dayjs().startOf("month").format("YYYY-MM-DD") // 开始时间
   @State endDate: string = dayjs().format("YYYY-MM-DD") // 结束时间
   @State pageModel: LogsPageModel = new LogsPageModel()
+
 
   aboutToAppear(): void {
     this.pageModel.loadData()
@@ -56,7 +57,7 @@ export struct LogsView {
       }) {
         Text("开始: "+this.startDate)
           .backgroundColor("#ffd4d4d4")
-          .fontSize(12)
+          .fontSize(16)
           .padding(8)
           .onClick(()=>{
             DatePickerDialog.show({
@@ -67,7 +68,7 @@ export struct LogsView {
           })
         Text("结束: "+this.endDate)
           .backgroundColor("#ffd4d4d4")
-          .fontSize(12)
+          .fontSize(16)
           .padding(8)
           .onClick(()=> {
             DatePickerDialog.show({
@@ -88,6 +89,10 @@ export struct LogsView {
             bottom: 4
           })
           .height(30)
+          .onClick(()=>{
+            // this.pageModel.list.splice(0, this.pageModel.list.length)
+            this.pageModel.loadData(this.startDate+" 00:00:00", this.endDate+" 23:59:59")
+          })
       }
       .margin({
         bottom: 16
