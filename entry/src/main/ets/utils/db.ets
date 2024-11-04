@@ -21,7 +21,7 @@ export class RODTools {
 
     // 判断数据库版本，如果不匹配则需进行升降级操作
     // 假设当前数据库版本为3，表结构：EMPLOYEE (NAME, AGE, SALARY, CODES, IDENTITY)
-    // const SQL_CREATE_TABLE = 'CREATE TABLE IF NOT EXISTS EMPLOYEE (ID INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT NOT NULL, AGE INTEGER, SALARY REAL, CODES BLOB, IDENTITY UNLIMITED INT)'; // 建表Sql语句, IDENTITY为bigint类型，sql中指定类型为UNLIMITED INT
+    const SQL_CREATE_TABLE = 'CREATE TABLE IF NOT EXISTS EMPLOYEE (ID INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT NOT NULL, AGE INTEGER, SALARY REAL, CODES BLOB, IDENTITY UNLIMITED INT)'; // 建表Sql语句, IDENTITY为bigint类型，sql中指定类型为UNLIMITED INT
 
     relationalStore.getRdbStore(context, STORE_CONFIG, (err, store) => {
       if (err) {
@@ -33,7 +33,7 @@ export class RODTools {
       // 当数据库创建时，数据库默认版本为0
       if (store.version === 0) {
         // executeSql每次只能执行一个sql命名
-        // store.executeSql(SQL_CREATE_TABLE); // 创建数据表
+        store.executeSql(SQL_CREATE_TABLE); // 创建数据表
         // 设置数据库的版本，入参为大于0的整数
         store.version = 3;
       }

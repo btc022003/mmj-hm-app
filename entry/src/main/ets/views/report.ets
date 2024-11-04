@@ -13,10 +13,8 @@ function styleShadow() {
 
 @Component
 export struct ReportView {
-
   webMControll: WebviewController = new webview.WebviewController()
   webYControll: WebviewController = new webview.WebviewController()
-
   webOutMControll: WebviewController = new webview.WebviewController()
   webOutYControll: WebviewController = new webview.WebviewController()
   // tabsController: TabsController = new TabsController()
@@ -27,21 +25,22 @@ export struct ReportView {
     Column({
       space: 8
     }) {
-      Row(){
+      Row() {
         Text("收入")
-          .fontColor(this.selTabIndex==0?"":CommonConstants.DISABLED_COLOR)
-          .onClick(()=>{
+          .fontColor(this.selTabIndex == 0 ? "" : CommonConstants.DISABLED_COLOR)
+          .onClick(() => {
             this.selTabIndex = 0
             // this.tabsController.changeIndex(0)
           })
         Text("|")
         Text("支出")
-          .fontColor(this.selTabIndex==1?"":CommonConstants.DISABLED_COLOR)
-          .onClick(()=>{
+          .fontColor(this.selTabIndex == 1 ? "" : CommonConstants.DISABLED_COLOR)
+          .onClick(() => {
             this.selTabIndex = 1
             // this.tabsController.changeIndex(0)
           })
       }
+
       Tabs({
         // controller: this.tabsController,
         index: this.selTabIndex
@@ -59,6 +58,9 @@ export struct ReportView {
               controller: this.webMControll,
               src: $rawfile("web/index.html")
             })
+              .onPageEnd(() => {
+              this.webMControll.runJavaScript('initChat([{ value: 9480, name: "薪资" },{ value: 1500, name: "理财" },{ value: 3000, name: "其他" }])')
+            })
               .width(300)
               .height(300)
 
@@ -68,11 +70,15 @@ export struct ReportView {
               .fontColor("#fff")
               .styleShadow()
               .alignSelf(ItemAlign.Start)
+
             // 年汇总
             Web({
               controller: this.webYControll,
               src: $rawfile("web/index.html")
             })
+              .onPageEnd(() => {
+                this.webYControll.runJavaScript('initChat([{ value: 60480, name: "薪资" },{ value: 150026, name: "理财" },{ value: 8900, name: "其他" }])')
+              })
               .width(300)
               .height(300)
           }
@@ -92,6 +98,9 @@ export struct ReportView {
               controller: this.webOutMControll,
               src: $rawfile("web/index.html")
             })
+              .onPageEnd(() => {
+                this.webOutMControll.runJavaScript('initChat([{ value: 1048, name: "餐饮" },{ value: 735, name: "出行" },{ value: 580, name: "人情" },{ value: 484, name: "网购" },{ value: 300, name: "其他" },])')
+              })
               .width(300)
               .height(300)
 
@@ -106,6 +115,9 @@ export struct ReportView {
               controller: this.webOutYControll,
               src: $rawfile("web/index.html")
             })
+              .onPageEnd(() => {
+                this.webOutYControll.runJavaScript('initChat([{ value: 10480, name: "餐饮" },{ value: 3735, name: "出行" },{ value: 2580, name: "人情" },{ value: 8484, name: "网购" },{ value: 23300, name: "其他" },])')
+              })
               .width(300)
               .height(300)
           }
@@ -114,6 +126,7 @@ export struct ReportView {
       .layoutWeight(1)
       .scrollable(false)
       .barHeight(0)
+
       // .tabIndex(this.selTabIndex)
 
 

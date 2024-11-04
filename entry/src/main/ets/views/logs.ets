@@ -1,20 +1,81 @@
+import dayjs from '@hview/dayjs'
+import { ObservedArray } from '../common/app_model'
 import { CommonConstants } from "../common/constants/CommonConstants"
+import { LogItem, LogsPageModel } from '../view_model/logs_page_model'
+
+@Component
+struct LogsListView {
+  @ObjectLink
+  list: ObservedArray<LogItem>
+  build() {
+    List({
+      space: 8
+    }) {
+      ForEach(this.list, (item: LogItem) => {
+        ListItem() {
+          Column({
+            space: 8
+          }) {
+            Text(item.showTradeCate)
+              .fontSize(CommonConstants.FONT_SIZE_MD)
+            Text("￥"+item.amount)
+              .fontWeight(FontWeight.Bolder)
+            Text("注："+item.remarks)
+              .fontColor(CommonConstants.SECONDARY_COLOR)
+            Text(item.date)
+            Divider()
+              .width('100%')
+              .color(CommonConstants.SECONDARY_COLOR)
+              .height(.5)
+          }
+          .backgroundColor("#2deeeeee")
+          .alignItems(HorizontalAlign.Start)
+          .padding(4)
+        }
+      }, (k: LogItem) => k.id)
+    }
+    .layoutWeight(1)
+    .scrollBar(BarState.Off)
+  }
+}
 
 @Component
 export struct LogsView {
+  @State startDate: string = dayjs().format("YYYY-MM-DD") // 开始时间
+  @State endDate: string = dayjs().format("YYYY-MM-DD") // 结束时间
+  @State pageModel: LogsPageModel = new LogsPageModel()
+
+  aboutToAppear(): void {
+    this.pageModel.loadData()
+  }
+
   build() {
     Column() {
       Row({
         space: 2
       }) {
-        Text("开始: 2024-10-01")
+        Text("开始: "+this.startDate)
           .backgroundColor("#ffd4d4d4")
           .fontSize(12)
           .padding(8)
-        Text("结束: 2024-11-30")
+          .onClick(()=>{
+            DatePickerDialog.show({
+              onDateAccept: date=> {
+                this.startDate = dayjs(date).format("YYYY-MM-DD")
+              }
+            })
+          })
+        Text("结束: "+this.endDate)
           .backgroundColor("#ffd4d4d4")
           .fontSize(12)
           .padding(8)
+          .onClick(()=> {
+            DatePickerDialog.show({
+              onDateAccept: date=> {
+                this.endDate = dayjs(date).format("YYYY-MM-DD")
+              }
+            })
+          })
         Button("查询")
           .backgroundColor(CommonConstants.PRIMARY_COLOR)
           .type(ButtonType.Normal)
@@ -31,33 +92,11 @@ export struct LogsView {
       .margin({
         bottom: 16
       })
-      List({
-        space: 8
-      }) {
-        ForEach([1,2,3,4,5,6], (item: number) => {
-          ListItem() {
-            Column({
-              space: 8
-            }) {
-              Text("【支出】餐饮")
-                .fontSize(CommonConstants.FONT_SIZE_MD)
-              Text("￥15")
-                .fontWeight(FontWeight.Bolder)
-              Text("注：买早饭花费了15块，吃的包子，虽然有点贵但是很好吃")
-                .fontColor(CommonConstants.SECONDARY_COLOR)
-              Text("2024-11-02")
-              Divider()
-                .width('100%')
-                .color(CommonConstants.SECONDARY_COLOR)
-                .height(.5)
-            }
-            .alignItems(HorizontalAlign.Start)
-            .padding(4)
-          }
-        }, (k: string) => k+"")
-      }
-      .layoutWeight(1)
-      .scrollBar(BarState.Off)
+
+      // listView
+      LogsListView({
+        list: this.pageModel.list
+      })
     }
     .height('100%')
     .width('100%')

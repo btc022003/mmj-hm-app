@@ -15,7 +15,7 @@ struct NewsListView {
             space: 8
           }) {
             Text(item.title)
-              .fontSize(CommonConstants.FONT_SIZE_XL)
+              .fontSize(CommonConstants.FONT_SIZE_MD)
               .fontWeight(FontWeight.Bold)
             Text(item.summary)
               .fontColor(CommonConstants.SECONDARY_COLOR)
@@ -34,7 +34,6 @@ struct NewsListView {
           .backgroundColor("#0ceeeeee")
         }
       }, (item: NewsItem) => item.id)
-
     }
     .layoutWeight(1)
     .scrollBar(BarState.Off)
@@ -59,6 +58,7 @@ export struct DiscoverView {
         .fontColor(CommonConstants.SECONDARY_COLOR)
         .lineHeight(24)
 
+      // listView
       NewsListView({
         list: this.pageModel.list
       })
