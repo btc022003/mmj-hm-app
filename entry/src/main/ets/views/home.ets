@@ -1,10 +1,25 @@
-import { CommonConstants } from "../common/constants/CommonConstants"
+import { CommonConstants, TradeType } from "../common/constants/CommonConstants"
+import { HomePageModel, TodayTrade } from "../view_model/home_page_model"
+import { promptAction } from "@kit.ArkUI"
+import { ObservedArray } from "../common/app_model";
+
+interface LogInfo {
+  amount: number;
+  cate: string;
+  remarks: string;
+}
 
 @CustomDialog
 struct CheckInCustomDialog {
   controller: CustomDialogController = new CustomDialogController({
     builder: CheckInCustomDialog({}),
   })
+
+  @State tradeTypeValue: string = "canyin_expend"
+  @State txtAmount: string = ""
+  @State txtRemarks: string = ""
+
+  save: (data: LogInfo) => void = (data: LogInfo) => {} // 保存
 
   build() {
     Column({
@@ -18,35 +33,24 @@ struct CheckInCustomDialog {
           .padding(8)
           .fontColor("#fff")
         List() {
-          ListItem() {
-            Row() {
-              Text('理财')
-              Radio({ value: 'Radio2', group: 'radioGroup' }).checked(false)
-                .radioStyle({
-                  checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
-                })
+          ForEach(CommonConstants.TRADE_TYPES.filter(item=>item.value.includes('_income')), (item: TradeType) => {
+            ListItem() {
+              Row() {
+                Text(item.name)
+                Radio({ value: item.value, group: 'radioGroup' }).checked(false)
+                  .radioStyle({
+                    checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
+                  })
+                  .onChange(v=> {
+                    if(v) {
+                      // 选中
+                      this.tradeTypeValue = item.value
+                    }
+                  })
+              }
+              .justifyContent(FlexAlign.Center)
             }
-          }
-
-          ListItem() {
-            Row() {
-              Text('工资')
-              Radio({ value: 'Radio2', group: 'radioGroup' }).checked(false)
-                .radioStyle({
-                  checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
-                })
-            }
-          }
-
-          ListItem() {
-            Row() {
-              Text('其他')
-              Radio({ value: 'Radio2', group: 'radioGroup' }).checked(false)
-                .radioStyle({
-                  checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
-                })
-            }
-          }
+          }, (item: TradeType) => item.id)
         }.lanes(4)
 
         Text("支出")
@@ -54,56 +58,24 @@ struct CheckInCustomDialog {
           .padding(8)
           .fontColor("#fff")
         List() {
-          ListItem() {
-            Row() {
-              Text('餐饮')
-              Radio({ value: 'Radio2', group: 'radioGroup' }).checked(false)
-                .radioStyle({
-                  checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
-                })
+          ForEach(CommonConstants.TRADE_TYPES.filter(item=>item.value.includes('_expend')), (item: TradeType) => {
+            ListItem() {
+              Row() {
+                Text(item.name)
+                Radio({ value: item.value, group: 'radioGroup' }).checked(item.value == this.tradeTypeValue)
+                  .radioStyle({
+                    checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
+                  })
+                  .onChange(v=> {
+                    if(v) {
+                      // 选中
+                      this.tradeTypeValue = item.value
+                    }
+                  })
+              }
+              .justifyContent(FlexAlign.Center)
             }
-            .justifyContent(FlexAlign.Center)
-          }
-
-          ListItem() {
-            Row() {
-              Text('交通')
-              Radio({ value: 'Radio2', group: 'radioGroup' }).checked(false)
-                .radioStyle({
-                  checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
-                })
-            }
-          }
-
-          ListItem() {
-            Row() {
-              Text('人情')
-              Radio({ value: 'Radio2', group: 'radioGroup' }).checked(false)
-                .radioStyle({
-                  checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
-                })
-            }
-          }
-
-          ListItem() {
-            Row() {
-              Text('网购')
-              Radio({ value: 'Radio2', group: 'radioGroup' }).checked(false)
-                .radioStyle({
-                  checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
-                })
-            }
-          }
-
-          ListItem() {
-            Row() {
-              Text('其他')
-              Radio({ value: 'Radio2', group: 'radioGroup' }).checked(false)
-                .radioStyle({
-                  checkedBackgroundColor: CommonConstants.PRIMARY_COLOR
-                })
-            }
-          }
+          }, (item: TradeType) => item.id)
         }.lanes(4)
         .alignListItem(ListItemAlign.Center)
       }
@@ -111,13 +83,13 @@ struct CheckInCustomDialog {
 
       TextInput({
         placeholder: '请输入金额',
-      }).type(InputType.Number)
+        text: $$this.txtAmount
+      }).type(InputType.NUMBER_DECIMAL)
         .showUnderline(true)
         .borderRadius(4)
-
-
       TextArea({
-        placeholder: "请输入备注"
+        placeholder: "请输入备注",
+        text: $$this.txtRemarks
       })
         .height(90)
         .borderRadius(4)
@@ -130,7 +102,27 @@ struct CheckInCustomDialog {
         .borderRadius(4)
         .width('55%')
         .onClick(() => {
-          this.controller.close()
+          if(this.txtAmount && this.txtRemarks && this.tradeTypeValue) {
+
+            if(isNaN(Number(this.txtAmount))) {
+              promptAction.showToast({
+                message: '请输入正确的金额数据'
+              })
+              return
+            }
+            // 保存
+            this.save({
+              amount: Number(this.txtAmount),
+              remarks: this.txtRemarks,
+              cate: this.tradeTypeValue
+            })
+            // 关闭弹窗
+            this.controller.close()
+          } else {
+            promptAction.showToast({
+              message: '请输入记账数据'
+            })
+          }
         })
     }
     .height('80%')
@@ -154,11 +146,55 @@ function styleShadow() {
 }
 
 @Component
+struct TodayTradeView {
+  @ObjectLink list: ObservedArray<TodayTrade>
+  build() {
+    List() {
+      ForEach(this.list, (item: TodayTrade) => {
+        ListItem() {
+          Column({
+            space: 8
+          }) {
+            Text(item.showTradeCate)
+              .fontSize(CommonConstants.FONT_SIZE_MD)
+            Text("￥"+item.amount)
+              .fontWeight(FontWeight.Bolder)
+            Text("注："+item.remarks)
+              .fontColor(CommonConstants.SECONDARY_COLOR)
+            Divider()
+              .width('100%')
+              .color(CommonConstants.SECONDARY_COLOR)
+              .height(.5)
+              .styleShadow()
+          }
+          .alignItems(HorizontalAlign.Start)
+          .padding(4)
+        }
+      }, (item: TodayTrade) => item.id)
+    }
+    .scrollBar(BarState.Off)
+    .layoutWeight(1)
+  }
+}
+
+@Component
 export struct HomeView {
   dialogController: CustomDialogController = new CustomDialogController({
-    builder: CheckInCustomDialog(),
+    builder: CheckInCustomDialog({
+      save: this.saveLog.bind(this)
+    }),
     autoCancel: false
   })
+  
+  @State pageModel: HomePageModel = new HomePageModel()
+  
+  aboutToAppear(): void {
+    this.pageModel.loadTodayTrade()
+  }
+
+  saveLog(data: LogInfo) {
+    this.pageModel.addToTodayTradeList(data.amount, data.cate, data.remarks)
+  }
 
   build() {
     Column({
@@ -186,7 +222,7 @@ export struct HomeView {
         }) {
           Text("本月收入")
             .fontColor('#fff')
-          Text("￥10000")
+          Text("￥"+this.pageModel.incomeMonth)
             .fontColor('#fff')
         }
         .padding(32)
@@ -197,7 +233,7 @@ export struct HomeView {
 
         Column() {
           Text("本月支出")
-          Text("￥100")
+          Text("￥"+this.pageModel.expandMonth)
         }
         .padding(32)
         .width('40%')
@@ -231,129 +267,9 @@ export struct HomeView {
         .alignSelf(ItemAlign.Start)
 
       // 当日记录
-      List() {
-        ListItem() {
-          Column({
-            space: 8
-          }) {
-            Text("【支出】餐饮")
-              .fontSize(CommonConstants.FONT_SIZE_MD)
-            Text("￥15")
-              .fontWeight(FontWeight.Bolder)
-            Text("注：买早饭花费了15块，吃的包子，虽然有点贵但是很好吃")
-              .fontColor(CommonConstants.SECONDARY_COLOR)
-            Divider()
-              .width('100%')
-              .color(CommonConstants.SECONDARY_COLOR)
-              .height(.5)
-              .styleShadow()
-          }
-          .alignItems(HorizontalAlign.Start)
-          .padding(4)
-        }
-
-        ListItem() {
-          Column({
-            space: 8
-          }) {
-            Text("【支出】餐饮")
-              .fontSize(CommonConstants.FONT_SIZE_MD)
-            Text("￥15")
-              .fontWeight(FontWeight.Bolder)
-            Text("注：买早饭花费了15块，吃的包子，虽然有点贵但是很好吃")
-              .fontColor(CommonConstants.SECONDARY_COLOR)
-            Divider()
-              .width('100%')
-              .color(CommonConstants.SECONDARY_COLOR)
-              .height(.5)
-              .styleShadow()
-          }
-          .alignItems(HorizontalAlign.Start)
-          .padding(4)
-        }
-
-        ListItem() {
-          Column({
-            space: 8
-          }) {
-            Text("【支出】餐饮")
-              .fontSize(CommonConstants.FONT_SIZE_MD)
-            Text("￥15")
-              .fontWeight(FontWeight.Bolder)
-            Text("注：买早饭花费了15块，吃的包子，虽然有点贵但是很好吃")
-              .fontColor(CommonConstants.SECONDARY_COLOR)
-            Divider()
-              .width('100%')
-              .color(CommonConstants.SECONDARY_COLOR)
-              .height(.5)
-              .styleShadow()
-          }
-          .alignItems(HorizontalAlign.Start)
-          .padding(4)
-        }
-
-        ListItem() {
-          Column({
-            space: 8
-          }) {
-            Text("【支出】餐饮")
-              .fontSize(CommonConstants.FONT_SIZE_MD)
-            Text("￥15")
-              .fontWeight(FontWeight.Bolder)
-            Text("注：买早饭花费了15块，吃的包子，虽然有点贵但是很好吃")
-              .fontColor(CommonConstants.SECONDARY_COLOR)
-            Divider()
-              .width('100%')
-              .color(CommonConstants.SECONDARY_COLOR)
-              .height(.5)
-              .styleShadow()
-          }
-          .alignItems(HorizontalAlign.Start)
-          .padding(4)
-        }
-
-        ListItem() {
-          Column({
-            space: 8
-          }) {
-            Text("【支出】餐饮")
-              .fontSize(CommonConstants.FONT_SIZE_MD)
-            Text("￥15")
-              .fontWeight(FontWeight.Bolder)
-            Text("注：买早饭花费了15块，吃的包子，虽然有点贵但是很好吃")
-              .fontColor(CommonConstants.SECONDARY_COLOR)
-            Divider()
-              .width('100%')
-              .color(CommonConstants.SECONDARY_COLOR)
-              .height(.5)
-              .styleShadow()
-          }
-          .alignItems(HorizontalAlign.Start)
-          .padding(4)
-        }
-
-        ListItem() {
-          Column({
-            space: 8
-          }) {
-            Text("【支出】餐饮")
-              .fontSize(CommonConstants.FONT_SIZE_MD)
-            Text("￥15")
-              .fontWeight(FontWeight.Bolder)
-            Text("注：买早饭花费了15块，吃的包子，虽然有点贵但是很好吃")
-              .fontColor(CommonConstants.SECONDARY_COLOR)
-            Divider()
-              .width('100%')
-              .color(CommonConstants.SECONDARY_COLOR)
-              .height(.5)
-              .styleShadow()
-          }
-          .alignItems(HorizontalAlign.Start)
-          .padding(4)
-        }
-      }
-      .scrollBar(BarState.Off)
-      .layoutWeight(1)
+      TodayTradeView({
+        list: this.pageModel.todayTradeList
+      })
 
     }
     .height('100%')
