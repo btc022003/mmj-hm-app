@@ -3,7 +3,7 @@ import utils from "@arkts.utils";
 import { util } from "@kit.ArkTS";
 import { ObservedArray } from "../common/app_model";
 import { RODTools } from "../utils/db";
-import dayjs from "@hview/dayjs";
+import { getDayMonthRange } from "../utils/tools";
 
 export class TodayTrade {
   id: string;
@@ -15,10 +15,11 @@ export class TodayTrade {
 
 
   private dalCate(cate: string) {
-    return cate.includes("_income")?'【收入】':'【支出】'+CommonConstants.TRADE_TYPES.find(item=>item.value == cate)?.name
+    return cate.includes("_income") ? '【收入】' :
+      '【支出】' + CommonConstants.TRADE_TYPES.find(item => item.value == cate)?.name
   }
 
-  constructor(id: string, cate: string, amount: number,date: Date, remarks: string) {
+  constructor(id: string, cate: string, amount: number, date: Date, remarks: string) {
     this.id = id
     this.cate = cate;
     this.remarks = remarks
@@ -47,19 +48,21 @@ SELECT sum(amount) as sum_amount, cate from ( select * from trade_logs WHERE cre
 export class HomePageModel {
   incomeMonth: number = 0;
   expandMonth: number = 0;
-
   todayTradeList: ObservedArray<TodayTrade> = new ObservedArray([])
 
   loadTodayTrade() {
+
+    const dayMonthRange = getDayMonthRange()
     // 本月的统计数据
-    const monthStart = dayjs().startOf("month").format("YYYY-MM-DD")+" 0:00:00"
-    const monthEnd = dayjs().endOf("month").format("YYYY-MM-DD")+" 23:59:59"
-    RODTools.getInstance().querySql(`SELECT sum(amount) as sum_amount, cate from ( select * from trade_logs WHERE created_at >= '${monthStart}' and created_at<= '${monthEnd}' ) GROUP BY cate`)
-      .then(resultSet=>{
+    const monthStart = dayMonthRange.monthStart //dayjs().startOf("month").format("YYYY-MM-DD")+" 0:00:00"
+    const monthEnd = dayMonthRange.monthEnd //dayjs().endOf("month").format("YYYY-MM-DD")+" 23:59:59"
+    RODTools.getInstance()
+      .querySql(`SELECT sum(amount) as sum_amount, cate from ( select * from trade_logs WHERE created_at >= '${monthStart}' and created_at<= '${monthEnd}' ) GROUP BY cate`)
+      .then(resultSet => {
         while (resultSet.goToNextRow()) {
           const cate = resultSet.getString(resultSet.getColumnIndex("cate")) // cate
           const sumAmount = resultSet.getLong(resultSet.getColumnIndex("sum_amount")) // sum_amount
-          if(cate.includes("_income")) {
+          if (cate.includes("_income")) {
             this.incomeMonth += sumAmount
           } else {
             this.expandMonth += sumAmount
@@ -69,11 +72,12 @@ export class HomePageModel {
 
     // 数据库中查询数据
     // 当天开始结束时间
-    const todayStart = dayjs().format("YYYY-MM-DD")+" 00:00:00"
-    const todayEnd = dayjs().format("YYYY-MM-DD")+" 23:59:59"
+    const todayStart = dayMonthRange.dayStart //dayjs().format("YYYY-MM-DD")+" 00:00:00"
+    const todayEnd = dayMonthRange.dayEnd //dayjs().format("YYYY-MM-DD")+" 23:59:59"
     // 查询当天的交易信息
-    RODTools.getInstance().querySql(`select * from trade_logs WHERE created_at >= '${todayStart}' and created_at<= '${todayEnd}' order by created_at desc`)
-      .then(resultSet=>{
+    RODTools.getInstance()
+      .querySql(`select * from trade_logs WHERE created_at >= '${todayStart}' and created_at<= '${todayEnd}' order by created_at desc`)
+      .then(resultSet => {
         while (resultSet.goToNextRow()) {
           // 继续
           const id = resultSet.getString(resultSet.getColumnIndex("id")) // id
@@ -102,21 +106,22 @@ export class HomePageModel {
     //   return pre+cur.amount
     // }, 0)
 
-    const id =util.generateRandomUUID()
-    RODTools.getInstance().executeSql(`INSERT INTO trade_logs(id,amount,remarks,cate) VALUES('${id}',${amount},'${remarks}','${cate}')`)
-      .then(()=>{
+    const id = util.generateRandomUUID()
+    RODTools.getInstance()
+      .executeSql(`INSERT INTO trade_logs(id,amount,remarks,cate) VALUES('${id}',${amount},'${remarks}','${cate}')`)
+      .then(() => {
         console.log("插入数据成功")
         // 直接修改保存的数据，不重复查询数据库
         this.todayTradeList.unshift(new TodayTrade(util.generateRandomUUID(), cate, amount, new Date(), remarks))
         // 修改统计信息
-        this.incomeMonth = this.todayTradeList.filter(item=>item.cate.includes("_income")).reduce((pre, cur) => {
-          return pre+cur.amount
+        this.incomeMonth = this.todayTradeList.filter(item => item.cate.includes("_income")).reduce((pre, cur) => {
+          return pre + cur.amount
         }, 0)
-        this.expandMonth = this.todayTradeList.filter(item=>item.cate.includes("_expend")).reduce((pre, cur) => {
-          return pre+cur.amount
+        this.expandMonth = this.todayTradeList.filter(item => item.cate.includes("_expend")).reduce((pre, cur) => {
+          return pre + cur.amount
         }, 0)
       })
-      .catch(()=>{
+      .catch(() => {
         //
         console.log("插入数据异常")
       })

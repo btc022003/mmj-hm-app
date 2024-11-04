@@ -4,6 +4,7 @@ import { common } from '@kit.AbilityKit'
 import { picker } from '@kit.CoreFileKit'
 import fs from '@ohos.file.fs';
 import { promptAction } from '@kit.ArkUI'
+import dayjs from "@hview/dayjs";
 
 /**
  * 服务器地址
@@ -21,6 +22,26 @@ export function dalImage(url: string) {
     return serverURL + url
   }
   return 'http://gips0.baidu.com/it/u=3602773692,1512483864&fm=3028&app=3028&f=JPEG&fmt=auto?w=960&h=1280'
+}
+
+export interface DayMonthRange {
+  dayStart: string;
+  dayEnd: string;
+  monthStart: string;
+  monthEnd: string
+}
+
+/**
+ * 获取当天和当月的时间边界
+ * @returns
+ */
+export function getDayMonthRange(): DayMonthRange {
+  return {
+    dayStart: dayjs().format("YYYY-MM-DD")+" 00:00:00",
+    dayEnd: dayjs().format("YYYY-MM-DD")+" 23:59:59",
+    monthStart: dayjs().startOf("month").format("YYYY-MM-DD")+" 0:00:00",
+    monthEnd: dayjs().endOf("month").format("YYYY-MM-DD")+" 23:59:59"
+  }
 }
 
 /**
