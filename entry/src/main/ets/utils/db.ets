@@ -21,7 +21,7 @@ export class RODTools {
 
     // 判断数据库版本，如果不匹配则需进行升降级操作
     // 假设当前数据库版本为3，表结构：EMPLOYEE (NAME, AGE, SALARY, CODES, IDENTITY)
-    const SQL_CREATE_TABLE = 'CREATE TABLE IF NOT EXISTS EMPLOYEE (ID INTEGER PRIMARY KEY AUTOINCREMENT, NAME TEXT NOT NULL, AGE INTEGER, SALARY REAL, CODES BLOB, IDENTITY UNLIMITED INT)'; // 建表Sql语句, IDENTITY为bigint类型，sql中指定类型为UNLIMITED INT
+    const SQL_CREATE_TABLE = 'create Table if not exists trade_logs(id TEXT PRIMARY KEY UNIQUE,amount DECIMAL, remarks TEXT, cate TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)'; // 建表Sql语句, IDENTITY为bigint类型，sql中指定类型为UNLIMITED INT
 
     relationalStore.getRdbStore(context, STORE_CONFIG, (err, store) => {
       if (err) {

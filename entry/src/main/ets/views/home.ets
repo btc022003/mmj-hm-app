@@ -157,7 +157,7 @@ struct TodayTradeView {
           }) {
             Text(item.showTradeCate)
               .fontSize(CommonConstants.FONT_SIZE_MD)
-            Text("￥"+item.amount)
+            Text("￥"+item.amount?.toFixed(2))
               .fontWeight(FontWeight.Bolder)
             Text("注："+item.remarks)
               .fontColor(CommonConstants.SECONDARY_COLOR)
@@ -222,7 +222,7 @@ export struct HomeView {
         }) {
           Text("本月收入")
             .fontColor('#fff')
-          Text("￥"+this.pageModel.incomeMonth)
+          Text("￥"+this.pageModel.incomeMonth?.toFixed(2))
             .fontColor('#fff')
         }
         .padding(32)
@@ -233,7 +233,7 @@ export struct HomeView {
 
         Column() {
           Text("本月支出")
-          Text("￥"+this.pageModel.expandMonth)
+          Text("￥"+this.pageModel.expandMonth?.toFixed(2))
         }
         .padding(32)
         .width('40%')
