@@ -4,9 +4,29 @@
 
 ## 界面截图
 
-![](./docs/1.png)
-![](./docs/2.jpg)
-![](./docs/3.png)
-![](./docs/4.png)
-![](./docs/5.png)
-![](./docs/6.png)
+<p align="center">
+    <img src="./docs/1.png" width="50%" align="center"/>
+</p>
+
+<hr/>
+
+<p align="center">
+    <img src="./docs/2.jpg" width="50%" align="center"/>
+</p>
+<hr/>
+<p align="center">
+    <img src="./docs/3.png" width="50%" align="center"/>
+</p>
+<hr/>
+<p align="center">
+    <img src="./docs/4.png" width="50%" align="center"/>
+</p>
+<hr/>
+<p align="center">
+    <img src="./docs/5.png" width="50%" align="center"/>
+</p>
+<hr/>
+<p align="center">
+    <img src="./docs/6.png" width="50%" align="center"/>
+</p>
+
